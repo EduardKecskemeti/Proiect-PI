@@ -3,10 +3,19 @@
 ### Kecskemeti Eduard-Alexandru
 
 ## Descriere
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+Aplicația urmărește să ajute utilizatorul în urmărirea progresului de-a lungul antrenamentelor la sală,aplicația va include:
+-observe progresul pentru fiecare exercițiu dintr-un antrenament
+-Tracker pentru macronutrienți,care vine cu o sugestie pentru un număr ideal de calorii atât pentru diete de creștere cât și de scădere in greutate,bazată pe indexul de masă al utlizatorului și de nivelul său de activitate
+-Sugestii pentru programe de antrenament(atât split-uri de antrenament cât și exerciții pentru fiecare antrenament) 
+-Arată  grupele musculare lucrate în fiecare săptămână(va afișa volumul pentru fiecare grupă bazat pe numărul de seturi introduse de utilizator pe parcursul săptămânii)
+-Explică execuția corectă pentru fiecare exercițiu
+-Un sistem de tip "achievement" pentru diverse milestone-uri pe care utilizatorul le atinge (ex: 14 zile de antrenament consecutiv,genuflexiuni cu 100kg,1000 de seturi executate în total etc.)
+
+
+
 
 ## Obiective
-Lorem ipsum
+Aplicația urmărește să rezolve problema ..
 
 * ob1
 * ob2
