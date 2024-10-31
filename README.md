@@ -30,7 +30,25 @@ un record personal la greutate ridicată (de ex., genuflexiuni cu 100kg)
 un număr total de seturi executate (ex.: 1000 de seturi).
 Notificări și Motivație: Fiecare achievement deblocat poate genera o notificare motivațională care să încurajeze utilizatorul să continue progresul.
 
-Flow-ul Aplicației de Workout
+## Obiective
+Aplicația urmărește să rezolve problema ..
+
+* ob1
+* ob2
+* ob3
+    - sob31
+    - sob32
+    - ...
+* ....
+
+## Arhitectura
+Lorem ipsum ...
+
+![Alt text](documentatie-ghid-utlizare-raport/diagrama-clase.png)
+
+Lorem ipsum ...
+
+## Functionalitati/Exemple utilizare
 Ecranul de Login/Înregistrare
 Prima utilizare: Utilizatorul își creează un cont printr-un ecran de înregistrare, unde introducere detalii personale de bază (nume, vârstă, greutate, înălțime, nivel de activitate).
 Autentificare: După înregistrare, utilizatorul poate să se autentifice cu contul creat pentru a accesa toate funcționalitățile aplicației.
@@ -72,32 +90,6 @@ Sistem de Achievements
 Secțiunea de Realizări: Utilizatorul poate vedea o listă de milestones și achievements posibile 
 Notificări la Finalizarea Achievements: Când un achievement este atins , utilizatorul primește o notificare și o insignă vizibilă pe profil.
 
-
-
-
-
-
-
-## Obiective
-Aplicația urmărește să rezolve problema ..
-
-* ob1
-* ob2
-* ob3
-    - sob31
-    - sob32
-    - ...
-* ....
-
-## Arhitectura
-Lorem ipsum ...
-
-![Alt text](documentatie-ghid-utlizare-raport/diagrama-clase.png)
-
-Lorem ipsum ...
-
-## Functionalitati/Exemple utilizare
-Lorem ipsum
 
 ### Resurse
 Markdown Guide, [Online] Available: https://www.markdownguide.org/basic-syntax/ [accesed: Mar 14, 1706]
