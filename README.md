@@ -50,15 +50,18 @@ Lorem ipsum ...
 
 ## Functionalitati/Exemple utilizare
 Ecranul de Login/Înregistrare
+
 Prima utilizare: Utilizatorul își creează un cont printr-un ecran de înregistrare, unde introducere detalii personale de bază (nume, vârstă, greutate, înălțime, nivel de activitate).
 Autentificare: După înregistrare, utilizatorul poate să se autentifice cu contul creat pentru a accesa toate funcționalitățile aplicației.
 Scop: Acest pas permite personalizarea planurilor și a recomandărilor pe baza caracteristicilor individuale ale fiecărui utilizator.
 
 Dashboard-ul Principal
+
 Overview: După autentificare, utilizatorul este întâmpinat de un Dashboard unde vede un rezumat al progresului, inclusiv antrenamentele recente, un sumar săptămânal al seturilor și grupelor musculare lucrate și o vizualizare a progresului caloric și al macronutrienților.
 Navigație rapidă: Dashboard-ul include butoane către funcționalitățile principale: „Progres Antrenament”, „Planuri de Antrenament”, „Macronutrienți” și „Achievements”.
 
 Secțiunea de Progres Antrenament
+
 Adăugare Antrenament: Utilizatorul poate crea o sesiune de antrenament nouă. Poate alege exercițiile dorite, introduce numărul de seturi, repetări și greutatea folosită pentru fiecare exercițiu.
 Vizualizare Progres: Aici, utilizatorul poate vedea un grafic al progresului în timp pentru fiecare exercițiu individual. Graficele pot fi de tip linie (pentru creșterea greutății), bară (pentru numărul de seturi), și pot include o comparație pe ultimele săptămâni.
 Analiză Detaliată: În această secțiune, utilizatorul poate filtra exercițiile în funcție de grupă musculară (piept, spate, picioare etc.) și să vadă detalii ale progresului pentru fiecare dintre acestea.
