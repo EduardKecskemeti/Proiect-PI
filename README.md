@@ -4,8 +4,9 @@
 
 ## Descriere
 Workout App
--Limbaj de programare-Java
+
 Aplicația urmărește să ajute utilizatorul în urmărirea progresului de-a lungul antrenamentelor la sală, aplicația va include: 
+
 1. Interfață pentru Monitorizarea Progresului
 Funcționalități: Creează o pagină principală unde utilizatorul își poate înregistra și vizualiza progresul pentru fiecare exercițiu.
 Design: Oferă un tabel simplu cu câmpuri pentru numărul de seturi, repetări și greutate, și un grafic de progres care să arate îmbunătățirile de-a lungul timpului.
