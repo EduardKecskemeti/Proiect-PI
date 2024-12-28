@@ -2,7 +2,6 @@ package ui;
 
 import database.UserRepository;
 
-
 import javax.swing.*;
 import java.awt.*;
 
@@ -54,6 +53,8 @@ public class Login extends JFrame {
             String password = new String(passwordField1.getPassword());
             if (userRepository.validateUser(username, password)) {
                 JOptionPane.showMessageDialog(frame, "Login successful!");
+                frame.dispose();
+                new MainPage();
             } else {
                 JOptionPane.showMessageDialog(frame, "Invalid username or password.");
             }

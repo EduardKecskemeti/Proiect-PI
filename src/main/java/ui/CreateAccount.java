@@ -13,7 +13,6 @@ public class CreateAccount extends JFrame {
     private JPanel Jpanel;
     private JFrame frame;
     private UserRepository userRepository;
-    private JTextField textField1;
 
     public CreateAccount(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -47,9 +46,13 @@ public class CreateAccount extends JFrame {
         createAccountButton.addActionListener(e -> {
             String username = UserText.getText();
             String password = new String(passwordField1.getPassword());
-            userRepository.addUser(username, password);
-            JOptionPane.showMessageDialog(frame, "Account created successfully!");
-            frame.dispose();
+            if (userRepository.addUser(username, password)) {
+                JOptionPane.showMessageDialog(frame, "Account created successfully!");
+                frame.dispose();
+                new UserDetailsPage(username, userRepository);
+            } else {
+                JOptionPane.showMessageDialog(frame, "Failed to create account.");
+            }
         });
     }
 }

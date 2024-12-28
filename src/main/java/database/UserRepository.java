@@ -23,15 +23,46 @@ public class UserRepository {
         }
     }
 
-    public void addUser(String username, String password) {
+    public boolean addUser(String username, String password) {
         String sql = "INSERT INTO users(username, password) VALUES(?, ?)";
         try (Connection conn = DriverManager.getConnection(URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, username);
             pstmt.setString(2, password);
             pstmt.executeUpdate();
+            return true;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean saveUserDetails(String username, int weight, int age, int height, String gender) {
+        String sql = "UPDATE users SET weight = ?, age = ?, height = ?, gender = ? WHERE username = ?";
+        try (Connection conn = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, weight);
+            pstmt.setInt(2, age);
+            pstmt.setInt(3, height);
+            pstmt.setString(4, gender);
+            pstmt.setString(5, username);
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public ResultSet getUserDetails(String username) {
+        String sql = "SELECT weight, age, height, gender FROM users WHERE username = ?";
+        try (Connection conn = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            return pstmt.executeQuery();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return null;
         }
     }
 }
