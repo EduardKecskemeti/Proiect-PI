@@ -116,14 +116,61 @@ public class UserRepository {
         }
         return 0;
     }
+    public int getConsumedProteins(String username) {
+        String sql = "SELECT SUM(proteins) AS total FROM meals WHERE username = ? AND date = date('now')";
+        try (Connection conn = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return 0;
+    }
 
-    public boolean logMeal(String username, String mealName, int calories) {
-        String sql = "INSERT INTO meals(username, meal_name, calories, date) VALUES(?, ?, ?, date('now'))";
+    public int getConsumedFats(String username) {
+        String sql = "SELECT SUM(fats) AS total FROM meals WHERE username = ? AND date = date('now')";
+        try (Connection conn = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return 0;
+    }
+
+    public int getConsumedCarbohydrates(String username) {
+        String sql = "SELECT SUM(carbohydrates) AS total FROM meals WHERE username = ? AND date = date('now')";
+        try (Connection conn = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return 0;
+    }
+
+    public boolean logMeal(String username, String mealName, int calories, int proteins, int fats, int carbohydrates) {
+        String sql = "INSERT INTO meals(username, meal_name, calories, proteins, fats, carbohydrates, date) VALUES(?, ?, ?, ?, ?, ?, date('now'))";
         try (Connection conn = DriverManager.getConnection(URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, username);
             pstmt.setString(2, mealName);
             pstmt.setInt(3, calories);
+            pstmt.setInt(4, proteins);
+            pstmt.setInt(5, fats);
+            pstmt.setInt(6, carbohydrates);
             pstmt.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -133,7 +180,7 @@ public class UserRepository {
     }
 
     public ResultSet getMeals(String username) {
-        String sql = "SELECT meal_name, calories, date FROM meals WHERE username = ? AND date = date('now')";
+        String sql = "SELECT meal_name, calories, proteins, fats, carbohydrates, date FROM meals WHERE username = ? AND date = date('now')";
         try (Connection conn = DriverManager.getConnection(URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, username);
