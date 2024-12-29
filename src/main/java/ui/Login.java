@@ -54,7 +54,7 @@ public class Login extends JFrame {
             if (userRepository.validateUser(username, password)) {
                 JOptionPane.showMessageDialog(frame, "Login successful!");
                 frame.dispose();
-                new MainPage();
+                new MainPage(username, userRepository);
             } else {
                 JOptionPane.showMessageDialog(frame, "Invalid username or password.");
             }

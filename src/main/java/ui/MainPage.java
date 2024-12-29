@@ -1,5 +1,7 @@
 package ui;
 
+import database.UserRepository;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -9,8 +11,13 @@ public class MainPage extends JFrame {
     private JButton macroTrackerButton;
     private JButton achievementsButton;
     private JButton workoutProgressButton;
+    private UserRepository userRepository;
+    private String username;
 
-    public MainPage() {
+    public MainPage(String username, UserRepository userRepository) {
+        this.username = username;
+        this.userRepository = userRepository;
+
         setTitle("Main Page");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(800, 600));
@@ -65,7 +72,7 @@ public class MainPage extends JFrame {
     }
 
     private void openMacroTrackerPage() {
-        new MacroTrackerPage();
+        new MacroTrackerPage(username, userRepository);
     }
 
     private void openAchievementsPage() {
