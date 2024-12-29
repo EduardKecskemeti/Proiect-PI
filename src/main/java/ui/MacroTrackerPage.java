@@ -18,10 +18,12 @@ public class MacroTrackerPage extends JFrame {
     private JTextField mealCarbohydratesField;
     private JButton logMealButton;
     private JTextArea mealLogArea;
-    private JLabel totalCaloriesLabel;
-    private JLabel totalProteinsLabel;
-    private JLabel totalFatsLabel;
-    private JLabel totalCarbohydratesLabel;
+    private JProgressBar proteinProgressBar;
+    private JProgressBar fatProgressBar;
+    private JProgressBar carbohydrateProgressBar;
+    private JLabel proteinLabel;
+    private JLabel fatLabel;
+    private JLabel carbohydrateLabel;
     private UserRepository userRepository;
     private String username;
 
@@ -35,8 +37,6 @@ public class MacroTrackerPage extends JFrame {
         setResizable(false);
 
         // Customize progress bar appearance
-        UIManager.put("ProgressBar.foreground", new Color(76, 175, 80));
-        UIManager.put("ProgressBar.background", new Color(200, 200, 200));
         UIManager.put("ProgressBar.selectionForeground", Color.BLACK);
         UIManager.put("ProgressBar.selectionBackground", Color.WHITE);
         UIManager.put("ProgressBar.border", BorderFactory.createLineBorder(Color.GRAY, 1));
@@ -54,15 +54,34 @@ public class MacroTrackerPage extends JFrame {
         mealLogArea = new JTextArea(10, 30);
         mealLogArea.setEditable(false);
 
-        // Initialize total labels
-        totalCaloriesLabel = new JLabel("Total Calories: 0");
-        totalProteinsLabel = new JLabel("Total Proteins: 0g");
-        totalFatsLabel = new JLabel("Total Fats: 0g");
-        totalCarbohydratesLabel = new JLabel("Total Carbohydrates: 0g");
+        // Initialize progress bars for macronutrients
+        proteinProgressBar = new JProgressBar(SwingConstants.VERTICAL);
+        proteinProgressBar.setStringPainted(true);
+        proteinProgressBar.setForeground(Color.RED);
+        fatProgressBar = new JProgressBar(SwingConstants.VERTICAL);
+        fatProgressBar.setStringPainted(true);
+        fatProgressBar.setForeground(new Color(128, 0, 128)); // Purple
+        carbohydrateProgressBar = new JProgressBar(SwingConstants.VERTICAL);
+        carbohydrateProgressBar.setStringPainted(true);
+        carbohydrateProgressBar.setForeground(Color.YELLOW);
+
+        // Initialize labels for macronutrients
+        proteinLabel = new JLabel("Proteins");
+        fatLabel = new JLabel("Fats");
+        carbohydrateLabel = new JLabel("Carbohydrates");
 
         // Calculate daily calorie intake
         double dailyCalorieIntake = userRepository.calculateDailyCalorieIntake(username);
-        calorieIntakeLabel.setText("Daily Calorie Intake: " + dailyCalorieIntake + " kcal");
+
+        // Calculate maximum values for macronutrient progress bars
+        int maxCarbs = (int) (dailyCalorieIntake * 0.50 / 4);
+        int maxFats = (int) (dailyCalorieIntake * 0.15 / 9);
+        int maxProteins = (int) (dailyCalorieIntake * 0.35 / 4);
+
+        // Set maximum values for progress bars
+        proteinProgressBar.setMaximum(maxProteins);
+        fatProgressBar.setMaximum(maxFats);
+        carbohydrateProgressBar.setMaximum(maxCarbs);
 
         // Get consumed calories
         int consumedCalories = userRepository.getConsumedCalories(username);
@@ -141,18 +160,50 @@ public class MacroTrackerPage extends JFrame {
         gbc.gridwidth = 1;
         mainPanel.add(new JScrollPane(mealLogArea), gbc);
 
-        // Add total labels
+        // Add horizontal spacer
         gbc.gridx = 3;
         gbc.gridy = 0;
-        gbc.gridheight = 1;
+        gbc.gridheight = 8;
         gbc.gridwidth = 1;
-        mainPanel.add(totalCaloriesLabel, gbc);
+        mainPanel.add(Box.createHorizontalStrut(20), gbc);
+
+        // Add macronutrient labels
+        gbc.gridx = 4;
+        gbc.gridy = 0;
+        gbc.gridheight = 1;
+        mainPanel.add(new JLabel("Proteins"), gbc);
+        gbc.gridx = 5;
+        gbc.gridy = 0;
+        mainPanel.add(new JLabel("Fats"), gbc);
+        gbc.gridx = 6;
+        gbc.gridy = 0;
+        mainPanel.add(new JLabel("Carbohydrates"), gbc);
+
+        // Add macronutrient progress bars and labels
+        gbc.gridx = 4;
         gbc.gridy = 1;
-        mainPanel.add(totalProteinsLabel, gbc);
-        gbc.gridy = 2;
-        mainPanel.add(totalFatsLabel, gbc);
-        gbc.gridy = 3;
-        mainPanel.add(totalCarbohydratesLabel, gbc);
+        gbc.gridheight = 7;
+        gbc.gridwidth = 1;
+        mainPanel.add(proteinProgressBar, gbc);
+        gbc.gridy = 8;
+        gbc.gridheight = 1;
+        mainPanel.add(proteinLabel, gbc);
+
+        gbc.gridx = 5;
+        gbc.gridy = 1;
+        gbc.gridheight = 7;
+        mainPanel.add(fatProgressBar, gbc);
+        gbc.gridy = 8;
+        gbc.gridheight = 1;
+        mainPanel.add(fatLabel, gbc);
+
+        gbc.gridx = 6;
+        gbc.gridy = 1;
+        gbc.gridheight = 7;
+        mainPanel.add(carbohydrateProgressBar, gbc);
+        gbc.gridy = 8;
+        gbc.gridheight = 1;
+        mainPanel.add(carbohydrateLabel, gbc);
 
         // Add main panel to frame
         add(mainPanel);
@@ -164,6 +215,7 @@ public class MacroTrackerPage extends JFrame {
         logMealButton.addActionListener(e -> logMeal());
         updateMealLog();
         updateConsumedMacros();
+        updateConsumedCalories();
     }
 
     private void logMeal() {
@@ -190,6 +242,8 @@ public class MacroTrackerPage extends JFrame {
     private void updateConsumedCalories() {
         int consumedCalories = userRepository.getConsumedCalories(username);
         calorieProgressBar.setValue(consumedCalories);
+        int maxCalories = calorieProgressBar.getMaximum();
+        calorieIntakeLabel.setText("Daily Calorie Intake: " + consumedCalories + " / " + maxCalories + " kcal");
     }
 
     private void updateConsumedMacros() {
@@ -197,18 +251,26 @@ public class MacroTrackerPage extends JFrame {
         int totalFats = userRepository.getConsumedFats(username);
         int totalCarbohydrates = userRepository.getConsumedCarbohydrates(username);
 
-        totalProteinsLabel.setText("Total Proteins: " + totalProteins + "g");
-        totalFatsLabel.setText("Total Fats: " + totalFats + "g");
-        totalCarbohydratesLabel.setText("Total Carbohydrates: " + totalCarbohydrates + "g");
+        proteinProgressBar.setValue(totalProteins);
+        fatProgressBar.setValue(totalFats);
+        carbohydrateProgressBar.setValue(totalCarbohydrates);
+
+        int maxProteins = proteinProgressBar.getMaximum();
+        int maxFats = fatProgressBar.getMaximum();
+        int maxCarbohydrates = carbohydrateProgressBar.getMaximum();
+
+        proteinLabel.setText(totalProteins + "g / " + maxProteins + "g");
+        fatLabel.setText(totalFats + "g / " + maxFats + "g");
+        carbohydrateLabel.setText(totalCarbohydrates + "g / " + maxCarbohydrates + "g");
     }
 
     private void updateMealLog() {
         ResultSet rs = userRepository.getMeals(username);
         mealLogArea.setText("");
-        int totalCalories = userRepository.getConsumedCalories(username);
-        int totalProteins = userRepository.getConsumedProteins(username);
-        int totalFats = userRepository.getConsumedFats(username);
-        int totalCarbohydrates = userRepository.getConsumedCarbohydrates(username);
+        int totalCalories = 0;
+        int totalProteins = 0;
+        int totalFats = 0;
+        int totalCarbohydrates = 0;
         try {
             while (rs != null && rs.next()) {
                 String mealName = rs.getString("meal_name");
@@ -225,9 +287,6 @@ public class MacroTrackerPage extends JFrame {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        totalCaloriesLabel.setText("Total Calories: " + totalCalories);
-        totalProteinsLabel.setText("Total Proteins: " + totalProteins + "g");
-        totalFatsLabel.setText("Total Fats: " + totalFats + "g");
-        totalCarbohydratesLabel.setText("Total Carbohydrates: " + totalCarbohydrates + "g");
+        updateConsumedMacros();
     }
 }

@@ -78,9 +78,9 @@ public class UserRepository {
                 String gender = rs.getString("gender");
 
                 if (gender.equalsIgnoreCase("Male")) {
-                    return 66 + (13.7 * weight) + (5 * height) - (6.8 * age);
+                    return (10 * weight) + (6.25 * height) - (5 * age) + 5;
                 } else if (gender.equalsIgnoreCase("Female")) {
-                    return 655 + (9.6 * weight) + (1.8 * height) - (4.7 * age);
+                    return (10 * weight) + (6.25 * height) - (5 * age) - 161;
                 }
             }
         } catch (SQLException e) {
