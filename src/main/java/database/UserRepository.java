@@ -37,15 +37,16 @@ public class UserRepository {
         }
     }
 
-    public boolean saveUserDetails(String username, int weight, int age, int height, String gender) {
-        String sql = "UPDATE users SET weight = ?, age = ?, height = ?, gender = ? WHERE username = ?";
+    public boolean saveUserDetails(String username, int weight, int age, int height, String gender, String activityLevel) {
+        String sql = "UPDATE users SET weight = ?, age = ?, height = ?, gender = ?, activity_level = ? WHERE username = ?";
         try (Connection conn = DriverManager.getConnection(URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, weight);
             pstmt.setInt(2, age);
             pstmt.setInt(3, height);
             pstmt.setString(4, gender);
-            pstmt.setString(5, username);
+            pstmt.setString(5, activityLevel);
+            pstmt.setString(6, username);
             pstmt.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -66,7 +67,7 @@ public class UserRepository {
         }
     }
     public double calculateDailyCalorieIntake(String username) {
-        String sql = "SELECT weight, age, height, gender FROM users WHERE username = ?";
+        String sql = "SELECT weight, age, height, gender, activity_level FROM users WHERE username = ?";
         try (Connection conn = DriverManager.getConnection(URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, username);
@@ -76,12 +77,40 @@ public class UserRepository {
                 int age = rs.getInt("age");
                 int height = rs.getInt("height");
                 String gender = rs.getString("gender");
+                String activityLevel = rs.getString("activity_level");
 
+                double bmr;
                 if (gender.equalsIgnoreCase("Male")) {
-                    return (10 * weight) + (6.25 * height) - (5 * age) + 5;
+                    bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
                 } else if (gender.equalsIgnoreCase("Female")) {
-                    return (10 * weight) + (6.25 * height) - (5 * age) - 161;
+                    bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+                } else {
+                    return 0;
                 }
+
+                double activityMultiplier;
+                switch (activityLevel) {
+                    case "Sedentary (little to no exercise)":
+                        activityMultiplier = 1.2;
+                        break;
+                    case "Lightly active (light exercise 1-3 times a week)":
+                        activityMultiplier = 1.375;
+                        break;
+                    case "Moderately active (moderate exercise/sports 3-5 times a week)":
+                        activityMultiplier = 1.55;
+                        break;
+                    case "Very active (hard exercise/sports 6-7 days a week)":
+                        activityMultiplier = 1.725;
+                        break;
+                    case "Extra active (very hard exercise/sports & physical job or 2x training)":
+                        activityMultiplier = 1.9;
+                        break;
+                    default:
+                        activityMultiplier = 1.0;
+                        break;
+                }
+
+                return bmr * activityMultiplier;
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
