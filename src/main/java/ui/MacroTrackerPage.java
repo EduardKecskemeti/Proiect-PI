@@ -11,12 +11,14 @@ public class MacroTrackerPage extends JFrame {
 
     private JProgressBar calorieProgressBar;
     private JLabel calorieIntakeLabel;
-    private JTextField mealNameField;
+    private JTextField mealNameField; // Change back to JTextField
     private JTextField mealCaloriesField;
     private JTextField mealProteinsField;
     private JTextField mealFatsField;
     private JTextField mealCarbohydratesField;
+    private JTextField mealAmountField;
     private JButton logMealButton;
+    private JButton resetButton;
     private JTextArea mealLogArea;
     private JProgressBar proteinProgressBar;
     private JProgressBar fatProgressBar;
@@ -45,12 +47,14 @@ public class MacroTrackerPage extends JFrame {
         calorieProgressBar = new JProgressBar();
         calorieProgressBar.setStringPainted(true);
         calorieIntakeLabel = new JLabel();
-        mealNameField = new JTextField(10);
+        mealNameField = new JTextField(10); // Initialize as JTextField
         mealCaloriesField = new JTextField(10);
         mealProteinsField = new JTextField(10);
         mealFatsField = new JTextField(10);
         mealCarbohydratesField = new JTextField(10);
+        mealAmountField = new JTextField(10);
         logMealButton = new JButton("Log Meal");
+        resetButton = new JButton("Reset");
         mealLogArea = new JTextArea(10, 30);
         mealLogArea.setEditable(false);
 
@@ -147,23 +151,37 @@ public class MacroTrackerPage extends JFrame {
         gbc.gridy = 6;
         mainPanel.add(mealCarbohydratesField, gbc);
 
-        // Add log meal button
+        // Add meal amount label and field
         gbc.gridx = 0;
         gbc.gridy = 7;
+        mainPanel.add(new JLabel("Amount (grams):"), gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 7;
+        mainPanel.add(mealAmountField, gbc);
+
+        // Add log meal button
+        gbc.gridx = 0;
+        gbc.gridy = 8;
         gbc.gridwidth = 2;
         mainPanel.add(logMealButton, gbc);
+
+        // Add reset button
+        gbc.gridx = 0;
+        gbc.gridy = 9;
+        gbc.gridwidth = 2;
+        mainPanel.add(resetButton, gbc);
 
         // Add meal log area
         gbc.gridx = 2;
         gbc.gridy = 0;
-        gbc.gridheight = 8;
+        gbc.gridheight = 10;
         gbc.gridwidth = 1;
         mainPanel.add(new JScrollPane(mealLogArea), gbc);
 
         // Add horizontal spacer
         gbc.gridx = 3;
         gbc.gridy = 0;
-        gbc.gridheight = 8;
+        gbc.gridheight = 10;
         gbc.gridwidth = 1;
         mainPanel.add(Box.createHorizontalStrut(20), gbc);
 
@@ -182,26 +200,26 @@ public class MacroTrackerPage extends JFrame {
         // Add macronutrient progress bars and labels
         gbc.gridx = 4;
         gbc.gridy = 1;
-        gbc.gridheight = 7;
+        gbc.gridheight = 8;
         gbc.gridwidth = 1;
         mainPanel.add(proteinProgressBar, gbc);
-        gbc.gridy = 8;
+        gbc.gridy = 9;
         gbc.gridheight = 1;
         mainPanel.add(proteinLabel, gbc);
 
         gbc.gridx = 5;
         gbc.gridy = 1;
-        gbc.gridheight = 7;
+        gbc.gridheight = 8;
         mainPanel.add(fatProgressBar, gbc);
-        gbc.gridy = 8;
+        gbc.gridy = 9;
         gbc.gridheight = 1;
         mainPanel.add(fatLabel, gbc);
 
         gbc.gridx = 6;
         gbc.gridy = 1;
-        gbc.gridheight = 7;
+        gbc.gridheight = 8;
         mainPanel.add(carbohydrateProgressBar, gbc);
-        gbc.gridy = 8;
+        gbc.gridy = 9;
         gbc.gridheight = 1;
         mainPanel.add(carbohydrateLabel, gbc);
 
@@ -213,6 +231,10 @@ public class MacroTrackerPage extends JFrame {
 
         // Add action listener to log meal button
         logMealButton.addActionListener(e -> logMeal());
+
+        // Add action listener to reset button
+        resetButton.addActionListener(e -> resetMacros());
+
         updateMealLog();
         updateConsumedMacros();
         updateConsumedCalories();
@@ -224,7 +246,9 @@ public class MacroTrackerPage extends JFrame {
         int proteins = Integer.parseInt(mealProteinsField.getText());
         int fats = Integer.parseInt(mealFatsField.getText());
         int carbohydrates = Integer.parseInt(mealCarbohydratesField.getText());
-        if (userRepository.logMeal(username, mealName, calories, proteins, fats, carbohydrates)) {
+        int amount = Integer.parseInt(mealAmountField.getText());
+
+        if (userRepository.logMeal(username, mealName, calories, proteins, fats, carbohydrates, amount)) {
             userRepository.logConsumedCalories(username, calories);
             updateConsumedCalories();
             updateConsumedMacros();
@@ -234,6 +258,7 @@ public class MacroTrackerPage extends JFrame {
             mealProteinsField.setText("");
             mealFatsField.setText("");
             mealCarbohydratesField.setText("");
+            mealAmountField.setText("");
         } else {
             JOptionPane.showMessageDialog(this, "Failed to log meal.");
         }
@@ -278,7 +303,8 @@ public class MacroTrackerPage extends JFrame {
                 int proteins = rs.getInt("proteins");
                 int fats = rs.getInt("fats");
                 int carbohydrates = rs.getInt("carbohydrates");
-                mealLogArea.append(mealName + ": " + calories + " kcal, " + proteins + "g proteins, " + fats + "g fats, " + carbohydrates + "g carbs\n");
+                int amount = rs.getInt("amount");
+                mealLogArea.append(mealName + ": " + calories + " kcal, " + proteins + "g proteins, " + fats + "g fats, " + carbohydrates + "g carbs, " + amount + "g\n");
                 totalCalories += calories;
                 totalProteins += proteins;
                 totalFats += fats;
@@ -288,5 +314,12 @@ public class MacroTrackerPage extends JFrame {
             System.out.println(e.getMessage());
         }
         updateConsumedMacros();
+    }
+
+    private void resetMacros() {
+        userRepository.resetConsumedMacros(username);
+        updateConsumedCalories();
+        updateConsumedMacros();
+        updateMealLog();
     }
 }

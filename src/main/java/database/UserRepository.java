@@ -190,8 +190,8 @@ public class UserRepository {
         return 0;
     }
 
-    public boolean logMeal(String username, String mealName, int calories, int proteins, int fats, int carbohydrates) {
-        String sql = "INSERT INTO meals(username, meal_name, calories, proteins, fats, carbohydrates, date) VALUES(?, ?, ?, ?, ?, ?, date('now'))";
+    public boolean logMeal(String username, String mealName, int calories, int proteins, int fats, int carbohydrates, int amount) {
+        String sql = "INSERT INTO meals(username, meal_name, calories, proteins, fats, carbohydrates, amount, date) VALUES(?, ?, ?, ?, ?, ?, ?, date('now'))";
         try (Connection conn = DriverManager.getConnection(URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, username);
@@ -200,6 +200,7 @@ public class UserRepository {
             pstmt.setInt(4, proteins);
             pstmt.setInt(5, fats);
             pstmt.setInt(6, carbohydrates);
+            pstmt.setInt(7, amount); // Set the amount in grams
             pstmt.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -207,7 +208,35 @@ public class UserRepository {
             return false;
         }
     }
+    public ResultSet getPresetFoods() {
+        String sql = "SELECT * FROM foods";
+        try (Connection conn = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            return pstmt.executeQuery();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+    public void resetConsumedMacros(String username) {
+        String sql = "DELETE FROM consumed_calories WHERE username = ? AND date = date('now')";
+        try (Connection conn = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
 
+        sql = "DELETE FROM meals WHERE username = ? AND date = date('now')";
+        try (Connection conn = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
     public ResultSet getMeals(String username) {
         String sql = "SELECT meal_name, calories, proteins, fats, carbohydrates, date FROM meals WHERE username = ? AND date = date('now')";
         try (Connection conn = DriverManager.getConnection(URL);
