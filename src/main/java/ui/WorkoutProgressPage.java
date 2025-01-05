@@ -2,6 +2,8 @@ package ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class WorkoutProgressPage extends JFrame {
 
@@ -13,7 +15,20 @@ public class WorkoutProgressPage extends JFrame {
 
         // Initialize components
         JLabel label = new JLabel("Workout Progress Page");
-        add(label);
+        JButton addWorkoutButton = new JButton("Add Workout");
+
+        // Add action listener to the button
+        addWorkoutButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new AddWorkoutPage();
+            }
+        });
+
+        // Layout setup
+        setLayout(new BorderLayout());
+        add(label, BorderLayout.NORTH);
+        add(addWorkoutButton, BorderLayout.SOUTH);
 
         pack();
         setLocationRelativeTo(null);
