@@ -4,6 +4,7 @@ import database.UserRepository;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.SQLException;
 
 public class Login extends JFrame {
 
@@ -17,7 +18,13 @@ public class Login extends JFrame {
     private UserRepository userRepository;
 
     public Login() {
-        userRepository = new UserRepository();
+        try {
+            userRepository = new UserRepository();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error connecting to the database.", "Database Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         frame = new JFrame("Login Frame");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
