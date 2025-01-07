@@ -1,3 +1,4 @@
+// src/main/java/ui/MainPage.java
 package ui;
 
 import database.UserRepository;
@@ -64,7 +65,7 @@ public class MainPage extends JFrame {
     }
 
     private void openAddWorkoutPage() {
-        new AddWorkoutPage();
+        new AddWorkoutPage(username);
     }
 
     private void openWorkoutSuggestionsPage() {
@@ -76,6 +77,6 @@ public class MainPage extends JFrame {
     }
 
     private void openAchievementsPage() {
-        new AchievementsPage();
+        new AchievementsPage(username);
     }
 }

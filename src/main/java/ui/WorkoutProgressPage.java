@@ -30,7 +30,7 @@ public class WorkoutProgressPage extends JFrame {
         JButton addWorkoutButton = new JButton("Add Workout");
 
         // Add action listener to the button
-        addWorkoutButton.addActionListener(e -> new AddWorkoutPage());
+        //addWorkoutButton.addActionListener(e -> new AddWorkoutPage());
 
         // Layout setup
         setLayout(new BorderLayout());
@@ -64,7 +64,6 @@ public class WorkoutProgressPage extends JFrame {
                     workoutPanel.add(muscleGroupLabel);
 
                     ResultSet exercises = userRepository.getExercisesByMuscleGroup(muscleGroup);
-
                     while (exercises.next()) {
                         String exerciseName = exercises.getString("exercise_name");
                         int exerciseSets = exercises.getInt("sets");

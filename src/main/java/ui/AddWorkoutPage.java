@@ -1,3 +1,4 @@
+// src/main/java/ui/AddWorkoutPage.java
 package ui;
 
 import database.UserRepository;
@@ -6,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -24,15 +26,18 @@ public class AddWorkoutPage extends JFrame {
     private JButton newSetButton;
     private JButton addMuscleGroupButton;
     private JButton finishWorkoutButton;
-
+    private JLabel r= new JLabel("Reps:");
+    private JLabel w= new JLabel("Weight Used:");
     private Map<String, String[]> muscleExercises;
     private UserRepository userRepository;
 
     private String currentMuscleGroup;
     private String currentExercise;
     private int currentExerciseSets;
+    private String username;
 
-    public AddWorkoutPage() {
+    public AddWorkoutPage(String username) {
+        this.username = username;
         try {
             userRepository = new UserRepository();
         } catch (SQLException e) {
@@ -108,25 +113,10 @@ public class AddWorkoutPage extends JFrame {
             currentMuscleGroup = selectedMuscle; // Set current muscle group
             exerciseComboBox = new JComboBox<>(muscleExercises.get(selectedMuscle));
             exerciseTypeComboBox = new JComboBox<>(new String[]{"Cable", "Barbell", "Dumbbell", "Machine", "Free Weight"});
-            exerciseTypeComboBox.addActionListener(new ExerciseTypeSelectionListener());
             dynamicPanel.add(new JLabel("Exercise Name:"));
             dynamicPanel.add(exerciseComboBox);
             dynamicPanel.add(new JLabel("Exercise Type:"));
             dynamicPanel.add(exerciseTypeComboBox);
-            dynamicPanel.revalidate();
-            dynamicPanel.repaint();
-        }
-    }
-
-    private class ExerciseTypeSelectionListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            dynamicPanel.add(new JLabel("Weight Used:"));
-            weightField = new JTextField(10);
-            dynamicPanel.add(weightField);
-            dynamicPanel.add(new JLabel("Reps:"));
-            repsField = new JTextField(10);
-            dynamicPanel.add(repsField);
             dynamicPanel.revalidate();
             dynamicPanel.repaint();
         }
@@ -136,15 +126,21 @@ public class AddWorkoutPage extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             saveCurrentExercise();
-            dynamicPanel.removeAll();
-            String selectedMuscle = (String) muscleComboBox.getSelectedItem();
-            exerciseComboBox = new JComboBox<>(muscleExercises.get(selectedMuscle));
-            exerciseTypeComboBox = new JComboBox<>(new String[]{"Cable", "Barbell", "Dumbbell", "Machine", "Free Weight"});
-            exerciseTypeComboBox.addActionListener(new ExerciseTypeSelectionListener());
-            dynamicPanel.add(new JLabel("Exercise Name:"));
-            dynamicPanel.add(exerciseComboBox);
-            dynamicPanel.add(new JLabel("Exercise Type:"));
-            dynamicPanel.add(exerciseTypeComboBox);
+            currentExercise = (String) exerciseComboBox.getSelectedItem(); // Set current exercise
+            if (weightField != null && repsField != null) {
+                dynamicPanel.remove(weightField);
+                dynamicPanel.remove(repsField);
+                dynamicPanel.remove(r);
+                dynamicPanel.remove(w);
+            }
+            dynamicPanel.add(w);
+            weightField = new JTextField(10);
+            dynamicPanel.add(weightField);
+            dynamicPanel.add(r);
+            repsField = new JTextField(10);
+            dynamicPanel.add(repsField);
+            weightField.setText(""); // Clear weight field
+            repsField.setText(""); // Clear reps field
             dynamicPanel.revalidate();
             dynamicPanel.repaint();
         }
@@ -153,6 +149,10 @@ public class AddWorkoutPage extends JFrame {
     private class NewSetListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            if (currentExercise == null || currentExercise.equals("Select Exercise")) {
+                JOptionPane.showMessageDialog(AddWorkoutPage.this, "Please select an exercise before adding a set.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             if (weightField != null && repsField != null) {
                 String weightText = weightField.getText();
                 String repsText = repsField.getText();
@@ -188,7 +188,7 @@ public class AddWorkoutPage extends JFrame {
             return;
         }
         try {
-            userRepository.saveSet(currentExercise, weight, reps);
+            userRepository.saveSet(username, currentExercise, weight, reps);
             userRepository.updateBestSet(currentExercise, weight, reps);
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Error saving set data.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -224,14 +224,31 @@ public class AddWorkoutPage extends JFrame {
 
     private void saveCurrentMuscleGroup() {
         if (currentMuscleGroup != null) {
-            try {
-                userRepository.saveMuscleGroup(currentMuscleGroup, currentExerciseSets);
-            } catch (SQLException e) {
-                JOptionPane.showMessageDialog(this, "Error saving muscle group data.", "Error", JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
-            }
+            String date = dateField.getText();
+            int muscleId = userRepository.saveMuscleWorked(currentMuscleGroup, currentExerciseSets, getTopSetWeight());
+            saveExercises(muscleId);
         }
         currentMuscleGroup = (String) muscleComboBox.getSelectedItem();
+    }
+
+    private int getTopSetWeight() {
+        int topWeight = 0;
+        try {
+            ResultSet rs = userRepository.getTopSetWeightByMuscleGroup(currentMuscleGroup);
+            if (rs.next()) {
+                topWeight = rs.getInt("weight");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error retrieving top set weight.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return topWeight;
+    }
+
+    private void saveExercises(int muscleId) {
+        if (currentExercise != null) {
+            userRepository.saveExerciseDone(muscleId, currentExercise);
+        }
     }
 
     private class FinishWorkoutListener implements ActionListener {
@@ -241,6 +258,7 @@ public class AddWorkoutPage extends JFrame {
             saveCurrentMuscleGroup();
             saveWorkoutData();
             dispose(); // Close the panel
+            new WorkoutProgressPage(); // Open the WorkoutProgressPage
         }
     }
 
@@ -248,6 +266,5 @@ public class AddWorkoutPage extends JFrame {
         String date = dateField.getText();
         userRepository.saveWorkoutDate(date);
         JOptionPane.showMessageDialog(this, "Workout data saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
-
     }
 }
