@@ -1,3 +1,4 @@
+// src/main/java/ui/WorkoutProgressPage.java
 package ui;
 
 import database.UserRepository;
@@ -10,8 +11,10 @@ import java.sql.SQLException;
 public class WorkoutProgressPage extends JFrame {
 
     private UserRepository userRepository;
+    private String username;
 
-    public WorkoutProgressPage() {
+    public WorkoutProgressPage(String username) {
+        this.username = username;
         try {
             userRepository = new UserRepository();
         } catch (SQLException e) {
@@ -30,7 +33,10 @@ public class WorkoutProgressPage extends JFrame {
         JButton addWorkoutButton = new JButton("Add Workout");
 
         // Add action listener to the button
-        //addWorkoutButton.addActionListener(e -> new AddWorkoutPage());
+        addWorkoutButton.addActionListener(e -> {
+            new AddWorkoutPage(username);
+            dispose();
+        });
 
         // Layout setup
         setLayout(new BorderLayout());
@@ -50,18 +56,21 @@ public class WorkoutProgressPage extends JFrame {
         workoutPanel.setLayout(new BoxLayout(workoutPanel, BoxLayout.Y_AXIS));
 
         try {
-            ResultSet lastWorkout = userRepository.getLastWorkout();
-            if (lastWorkout.next()) {
-                String date = lastWorkout.getString("date");
-                JLabel dateLabel = new JLabel("Last Workout Date: " + date);
+            int workoutId = userRepository.getLastWorkoutId(username);
+            if (workoutId != -1) {
+                JLabel dateLabel = new JLabel("Last Workout ID: " + workoutId);
                 workoutPanel.add(dateLabel);
 
-                ResultSet muscleGroups = userRepository.getMuscleGroupsByWorkoutDate(date);
+                System.out.println("Last Workout ID: " + workoutId); // Debug statement
+
+                ResultSet muscleGroups = userRepository.getMuscleGroupsByWorkoutId(workoutId);
                 while (muscleGroups.next()) {
                     String muscleGroup = muscleGroups.getString("muscle_group");
                     int sets = muscleGroups.getInt("sets");
                     JLabel muscleGroupLabel = new JLabel("Muscle Group: " + muscleGroup + " (Sets: " + sets + ")");
                     workoutPanel.add(muscleGroupLabel);
+
+                    System.out.println("Muscle Group: " + muscleGroup + " (Sets: " + sets + ")"); // Debug statement
 
                     ResultSet exercises = userRepository.getExercisesByMuscleGroup(muscleGroup);
                     while (exercises.next()) {
@@ -70,18 +79,23 @@ public class WorkoutProgressPage extends JFrame {
                         JLabel exerciseLabel = new JLabel("  Exercise: " + exerciseName + " (Sets: " + exerciseSets + ")");
                         workoutPanel.add(exerciseLabel);
 
+                        System.out.println("  Exercise: " + exerciseName + " (Sets: " + exerciseSets + ")"); // Debug statement
+
                         ResultSet bestSet = userRepository.getBestSetByExercise(exerciseName);
                         if (bestSet.next()) {
                             int weight = bestSet.getInt("weight");
                             int reps = bestSet.getInt("reps");
                             JLabel bestSetLabel = new JLabel("    Best Set: " + weight + " kg x " + reps + " reps");
                             workoutPanel.add(bestSetLabel);
+
+                            System.out.println("    Best Set: " + weight + " kg x " + reps + " reps"); // Debug statement
                         }
                     }
                 }
             } else {
                 JLabel noWorkoutsLabel = new JLabel("No workouts registered");
                 workoutPanel.add(noWorkoutsLabel);
+                System.out.println("No workouts registered"); // Debug statement
             }
         } catch (SQLException e) {
             e.printStackTrace();

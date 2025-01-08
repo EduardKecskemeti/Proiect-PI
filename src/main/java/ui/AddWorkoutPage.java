@@ -213,19 +213,23 @@ public class AddWorkoutPage extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             saveCurrentExercise();
-            saveCurrentMuscleGroup();
-            dynamicPanel.removeAll();
-            dynamicPanel.add(new JLabel("Muscle(s) Worked:"));
-            dynamicPanel.add(muscleComboBox);
-            dynamicPanel.revalidate();
-            dynamicPanel.repaint();
+            try {
+                int workoutId = userRepository.getLastWorkoutId(username);
+                saveCurrentMuscleGroup(workoutId);
+                dynamicPanel.removeAll();
+                dynamicPanel.add(new JLabel("Muscle(s) Worked:"));
+                dynamicPanel.add(muscleComboBox);
+                dynamicPanel.revalidate();
+                dynamicPanel.repaint();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(AddWorkoutPage.this, "Error retrieving last workout ID.", "Database Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
-
-    private void saveCurrentMuscleGroup() {
+    private void saveCurrentMuscleGroup(int workoutId) {
         if (currentMuscleGroup != null) {
-            String date = dateField.getText();
-            int muscleId = userRepository.saveMuscleWorked(currentMuscleGroup, currentExerciseSets, getTopSetWeight());
+            int muscleId = userRepository.saveMuscleWorked(currentMuscleGroup, currentExerciseSets, getTopSetWeight(), workoutId);
             saveExercises(muscleId);
         }
         currentMuscleGroup = (String) muscleComboBox.getSelectedItem();
@@ -255,16 +259,33 @@ public class AddWorkoutPage extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             saveCurrentExercise();
-            saveCurrentMuscleGroup();
-            saveWorkoutData();
-            dispose(); // Close the panel
-            new WorkoutProgressPage(); // Open the WorkoutProgressPage
+            String date = dateField.getText();
+            boolean isSaved = userRepository.saveWorkoutDate(username, date);
+            if (isSaved) {
+                int workoutId = 0;
+                try {
+                    workoutId = userRepository.getLastWorkoutId(username);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(AddWorkoutPage.this, "Error retrieving last workout ID.", "Database Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                saveCurrentMuscleGroup(workoutId);
+                JOptionPane.showMessageDialog(AddWorkoutPage.this, "Workout data saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                dispose(); // Close the panel
+                new WorkoutProgressPage(username); // Open the WorkoutProgressPage
+            } else {
+                JOptionPane.showMessageDialog(AddWorkoutPage.this, "Failed to save workout data.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
     private void saveWorkoutData() {
         String date = dateField.getText();
-        userRepository.saveWorkoutDate(date);
-        JOptionPane.showMessageDialog(this, "Workout data saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+        if (userRepository.saveWorkoutDate(username, date)) {
+            JOptionPane.showMessageDialog(this, "Workout data saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Failed to save workout data.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

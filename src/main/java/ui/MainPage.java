@@ -26,7 +26,7 @@ public class MainPage extends JFrame {
 
         // Initialize components
         JPanel topPanel = new JPanel(new FlowLayout());
-        workoutProgressButton = new JButton("Add Workout");
+        workoutProgressButton = new JButton("Workout Progress");
         workoutSuggestionsButton = new JButton("Workout Suggestions");
         macroTrackerButton = new JButton("Macro Tracker");
         achievementsButton = new JButton("Achievements");
@@ -54,7 +54,7 @@ public class MainPage extends JFrame {
         add(centerPanel, BorderLayout.CENTER);
 
         // Add action listeners to buttons
-        workoutProgressButton.addActionListener(e -> openAddWorkoutPage());
+        workoutProgressButton.addActionListener(e -> openWorkoutProgressPage());
         workoutSuggestionsButton.addActionListener(e -> openWorkoutSuggestionsPage());
         macroTrackerButton.addActionListener(e -> openMacroTrackerPage());
         achievementsButton.addActionListener(e -> openAchievementsPage());
@@ -64,8 +64,8 @@ public class MainPage extends JFrame {
         setVisible(true);
     }
 
-    private void openAddWorkoutPage() {
-        new AddWorkoutPage(username);
+    private void openWorkoutProgressPage() {
+        new WorkoutProgressPage(username);
     }
 
     private void openWorkoutSuggestionsPage() {
