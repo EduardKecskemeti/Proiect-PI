@@ -12,7 +12,11 @@ import java.util.Map;
 public class AchievementsPage extends JFrame {
 
     private UserRepository userRepository;
-    private String[] exercises = {"Bench Press", "Squat", "Deadlift", "Pull Up", "Bicep Curl"};
+    private String[] exercises = {
+            "Bench Press", "Incline Bench", "Deadlifts", "Rows",
+            "Bicep Curls", "Dips", "Squats", "Hack Squats",
+            "Romanian Deadlifts", "Hip Thrusts"
+    };
 
     public AchievementsPage(String username) {
         try {
@@ -28,31 +32,31 @@ public class AchievementsPage extends JFrame {
         setPreferredSize(new Dimension(400, 300));
         setResizable(false);
 
-        // Initialize components
         JLabel titleLabel = new JLabel("Achievements", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Serif", Font.BOLD, 24));
 
-        JPanel centerPanel = new JPanel();
-        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        JPanel centerPanel = new JPanel(new BorderLayout());
 
-        // Fetch and display the max weight for each exercise
-        Map<String, Integer> maxWeights = new HashMap<>();
-        for (String exercise : exercises) {
+        String[] columnNames = {"Exercise", "Max Weight (kg)"};
+        Object[][] data = new Object[exercises.length][2];
+
+        for (int i = 0; i < exercises.length; i++) {
+            String exercise = exercises[i];
+            int maxWeight = 0;
             try {
-                int maxWeight = userRepository.getMaxWeightForExercise(username, exercise);
-                maxWeights.put(exercise, maxWeight);
+                maxWeight = userRepository.getMaxWeightForExercise(username, exercise);
             } catch (SQLException e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(this, "Error retrieving max weight for " + exercise + ".", "Error", JOptionPane.ERROR_MESSAGE);
             }
+            data[i][0] = exercise;
+            data[i][1] = maxWeight;
         }
 
-        for (Map.Entry<String, Integer> entry : maxWeights.entrySet()) {
-            JLabel exerciseLabel = new JLabel(entry.getKey() + ": " + entry.getValue() + " kg");
-            centerPanel.add(exerciseLabel);
-        }
+        JTable achievementsTable = new JTable(data, columnNames);
+        JScrollPane scrollPane = new JScrollPane(achievementsTable);
+        centerPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Layout setup
         setLayout(new BorderLayout());
         add(titleLabel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);

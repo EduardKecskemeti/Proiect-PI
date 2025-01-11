@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class MacroTrackerPage extends JFrame {
-
+    private  MainPage mainPage;
     private JProgressBar calorieProgressBar;
     private JLabel calorieIntakeLabel;
     private JTextField mealNameField; // Change back to JTextField
@@ -29,9 +29,10 @@ public class MacroTrackerPage extends JFrame {
     private UserRepository userRepository;
     private String username;
 
-    public MacroTrackerPage(String username, UserRepository userRepository) {
+    public MacroTrackerPage(String username, UserRepository userRepository,MainPage mainPage) {
         this.username = username;
         this.userRepository = userRepository;
+        this.mainPage = mainPage;
 
         setTitle("Macro Tracker");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -253,6 +254,7 @@ public class MacroTrackerPage extends JFrame {
             updateConsumedCalories();
             updateConsumedMacros();
             updateMealLog();
+            mainPage.updateCalorieProgressBar();
             mealNameField.setText("");
             mealCaloriesField.setText("");
             mealProteinsField.setText("");
@@ -260,7 +262,7 @@ public class MacroTrackerPage extends JFrame {
             mealCarbohydratesField.setText("");
             mealAmountField.setText("");
         } else {
-            JOptionPane.showMessageDialog(this, "Failed to log meal.");
+            JOptionPane.showMessageDialog(this, "Error logging meal.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -319,6 +321,7 @@ public class MacroTrackerPage extends JFrame {
     private void resetMacros() {
         userRepository.resetConsumedMacros(username);
         updateConsumedCalories();
+        mainPage.updateCalorieProgressBar();
         updateConsumedMacros();
         updateMealLog();
     }

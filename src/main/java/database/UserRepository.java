@@ -2,6 +2,8 @@
 package database;
 
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UserRepository {
     private static final String URL = "jdbc:sqlite:db/userdb.db";
@@ -9,7 +11,7 @@ public class UserRepository {
     private static final int RETRY_DELAY_MS = 100;
 
     public UserRepository() throws SQLException {
-        // Connection is now created and closed in each method
+
     }
 
     private void executeUpdateWithRetry(String sql, String... params) throws SQLException {
@@ -48,7 +50,7 @@ public class UserRepository {
                 }
                 return pstmt.executeQuery();
             } catch (SQLException e) {
-                if (e.getErrorCode() == 5 && retries < MAX_RETRIES) { // SQLITE_BUSY error code is 5
+                if (e.getErrorCode() == 5 && retries < MAX_RETRIES) {
                     retries++;
                     try {
                         Thread.sleep(RETRY_DELAY_MS);
@@ -63,20 +65,7 @@ public class UserRepository {
         }
     }
 
-    public int getMaxWeightForExercise(String username, String exerciseName) throws SQLException {
-        String sql = "SELECT MAX(weight) AS max_weight FROM Sets WHERE exercise_name = ? AND username = ?";
-        try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, exerciseName);
-            pstmt.setString(2, username);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next() && rs.getInt("max_weight") != 0) {
-                    return rs.getInt("max_weight");
-                }
-            }
-        }
-        return 0;
-    }
+
 
     public void saveSet(String username, String exerciseName, int weight, int reps) throws SQLException {
         String sql = "INSERT INTO Sets (username, exercise_name, weight, reps) VALUES (?, ?, ?, ?)";
@@ -128,7 +117,6 @@ public class UserRepository {
         return -1;
     }
 
-    // src/main/java/database/UserRepository.java
     public boolean saveWorkoutDate(String username, String date) {
         String sql = "INSERT INTO Workouts (username, date) VALUES (?, ?)";
         try (Connection connection = DriverManager.getConnection(URL);
@@ -431,15 +419,7 @@ public class UserRepository {
         }
     }
 
-    // src/main/java/database/UserRepository.java
-    public ResultSet getMuscleGroupsByWorkoutId(int workoutId) throws SQLException {
-        String sql = "SELECT muscle_name AS muscle_group, sets FROM MusclesWorked WHERE workout_id = ?";
-        try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, workoutId);
-            return pstmt.executeQuery();
-        }
-    }
+
 
     public ResultSet getExercisesByMuscleGroup(String muscleGroup) throws SQLException {
         String sql = "SELECT exercise_name, sets FROM Exercises WHERE muscle_group = ?";
@@ -450,14 +430,7 @@ public class UserRepository {
         }
     }
 
-    public ResultSet getBestSetByExercise(String exerciseName) throws SQLException {
-        String sql = "SELECT weight, reps FROM BestSets WHERE exercise_name = ?";
-        try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, exerciseName);
-            return pstmt.executeQuery();
-        }
-    }
+
 
     public boolean userExists(String username) {
         String sql = "SELECT 1 FROM users WHERE username = ?";
@@ -472,4 +445,74 @@ public class UserRepository {
             return false;
         }
     }
+    public int getMaxWeightForExercise(String username, String exerciseName) throws SQLException {
+        String sql = "SELECT max_weight FROM MaxWeights WHERE username = ? AND exercise_name = ?";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, exerciseName);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("max_weight");
+                }
+            }
+        }
+        return 0;
+    }
+
+    public void saveMaxWeight(String username, String exerciseName, int weight) throws SQLException {
+        String sql = "INSERT INTO MaxWeights (username, exercise_name, max_weight) VALUES (?, ?, ?) " +
+                "ON CONFLICT(username, exercise_name) DO UPDATE SET max_weight = ?";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, exerciseName);
+            pstmt.setInt(3, weight);
+            pstmt.setInt(4, weight);
+            pstmt.executeUpdate();
+        }
+    }
+
+    public void saveMuscleGroupSets(String username, String muscleGroup, int sets) throws SQLException {
+        String sql = "INSERT INTO MuscleGroupSets (username, muscle_group, week_start_date, sets) VALUES (?, ?, date('now', 'weekday 0', '-7 days'), ?) " +
+                "ON CONFLICT(username, muscle_group, week_start_date) DO UPDATE SET sets = sets + ?";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, muscleGroup);
+            pstmt.setInt(3, sets);
+            pstmt.setInt(4, sets);
+            pstmt.executeUpdate();
+        }
+    }
+
+    public int getMuscleGroupSets(String username, String muscleGroup) throws SQLException {
+        String sql = "SELECT sets FROM MuscleGroupSets WHERE username = ? AND muscle_group = ? AND week_start_date = date('now', 'weekday 0', '-7 days')";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, muscleGroup);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("sets");
+                }
+            }
+        }
+        return 0;
+    }
+    public Map<String, Integer> getAllMuscleGroupSets(String username) throws SQLException {
+        String sql = "SELECT muscle_group, sets FROM MuscleGroupSets WHERE username = ? AND week_start_date = date('now', 'weekday 0', '-7 days')";
+        Map<String, Integer> muscleGroupSets = new HashMap<>();
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    muscleGroupSets.put(rs.getString("muscle_group"), rs.getInt("sets"));
+                }
+            }
+        }
+        return muscleGroupSets;
+    }
 }
+

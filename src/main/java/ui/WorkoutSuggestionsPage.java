@@ -11,11 +11,11 @@ public class WorkoutSuggestionsPage extends JFrame {
         setTitle("Workout Suggestions");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setPreferredSize(new Dimension(800, 600));
-        setResizable(false);
+        setResizable(true);
 
         // Initialize components
         JPanel mainPanel = new JPanel(new GridLayout(2, 2, 10, 10));
-        mainPanel.add(createWorkoutPanel("Upper Lower", "resources/upper_lower.jpg"));
+        mainPanel.add(createWorkoutPanel("Upper Lower", "resources/upper_lower.jpeg"));
         mainPanel.add(createWorkoutPanel("Push Pull Legs", "resources/push_pull_legs.jpg"));
         mainPanel.add(createWorkoutPanel("Bro Split", "resources/bro_split.png"));
         mainPanel.add(createWorkoutPanel("Full Body", "resources/full_body.jpg"));

@@ -7,7 +7,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -26,8 +25,8 @@ public class AddWorkoutPage extends JFrame {
     private JButton newSetButton;
     private JButton addMuscleGroupButton;
     private JButton finishWorkoutButton;
-    private JLabel r= new JLabel("Reps:");
-    private JLabel w= new JLabel("Weight Used:");
+    private JLabel r = new JLabel("Reps:");
+    private JLabel w = new JLabel("Weight Used:");
     private Map<String, String[]> muscleExercises;
     private UserRepository userRepository;
 
@@ -35,6 +34,7 @@ public class AddWorkoutPage extends JFrame {
     private String currentExercise;
     private int currentExerciseSets;
     private String username;
+    private Map<String, Integer> muscleGroupSets;
 
     public AddWorkoutPage(String username) {
         this.username = username;
@@ -53,11 +53,21 @@ public class AddWorkoutPage extends JFrame {
 
         // Initialize muscle exercises map
         muscleExercises = new HashMap<>();
-        muscleExercises.put("Chest", new String[]{"Bench Press", "Chest Fly", "Push Up"});
-        muscleExercises.put("Back", new String[]{"Pull Up", "Deadlift", "Row"});
-        muscleExercises.put("Legs", new String[]{"Squat", "Leg Press", "Lunge"});
-        muscleExercises.put("Arms", new String[]{"Bicep Curl", "Tricep Extension", "Hammer Curl"});
-        muscleExercises.put("Shoulders", new String[]{"Shoulder Press", "Lateral Raise", "Front Raise"});
+        muscleExercises.put("Chest", new String[]{"Bench Press", "Incline Bench", "Chest Flies", "Push Ups"});
+        muscleExercises.put("Back", new String[]{"Deadlifts", "Lat Pulldowns", "Rows", "Pullovers", "Pullups"});
+        muscleExercises.put("Biceps", new String[]{"Bicep Curls", "Hammer Curls", "Preacher Curls", "Behind the Back Curls"});
+        muscleExercises.put("Triceps", new String[]{"Tricep Pushdowns", "Tricep Extensions", "Dips", "Overhead Extensions", "JM Press", "Close Grip Bench"});
+        muscleExercises.put("Shoulders", new String[]{"Shoulder Press", "Lateral Raises", "Upright Rows", "Reverse Flies", "Front Raises", "Face Pulls"});
+        muscleExercises.put("Quads", new String[]{"Squats", "Hack Squats", "Leg Extensions", "Leg Press"});
+        muscleExercises.put("Hamstrings", new String[]{"Seated Hamstring Curl", "Lying Hamstring Curl", "Stiff Legged Deadlifts"});
+        muscleExercises.put("Glutes", new String[]{"Romanian Deadlifts", "Hip Thrusts", "Glute Kickbacks"});
+        muscleExercises.put("Calves", new String[]{"Toe Press", "Standing Calf Raise", "Sitting Calf Raise"});
+
+        // Initialize muscle group sets map
+        muscleGroupSets = new HashMap<>();
+        for (String muscleGroup : muscleExercises.keySet()) {
+            muscleGroupSets.put(muscleGroup, 0);
+        }
 
         // Initialize components
         JLabel dateLabel = new JLabel("Date:");
@@ -166,6 +176,8 @@ public class AddWorkoutPage extends JFrame {
                     saveSetData(weight, reps);
                     weightField.setText("");
                     repsField.setText("");
+                    currentExerciseSets++;
+                    muscleGroupSets.put(currentMuscleGroup, muscleGroupSets.get(currentMuscleGroup) + 1);
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(AddWorkoutPage.this, "Please enter valid positive numbers for weight and reps.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
                 }
@@ -188,8 +200,7 @@ public class AddWorkoutPage extends JFrame {
             return;
         }
         try {
-            userRepository.saveSet(username, currentExercise, weight, reps);
-            userRepository.updateBestSet(currentExercise, weight, reps);
+            userRepository.saveMaxWeight(username, currentExercise, weight);
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Error saving set data.", "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
@@ -199,7 +210,7 @@ public class AddWorkoutPage extends JFrame {
     private void saveCurrentExercise() {
         if (currentExercise != null) {
             try {
-                userRepository.saveExercise(currentMuscleGroup, currentExercise, currentExerciseSets);
+                userRepository.saveMuscleGroupSets(username, currentMuscleGroup, currentExerciseSets);
             } catch (SQLException e) {
                 JOptionPane.showMessageDialog(this, "Error saving exercise data.", "Error", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
@@ -213,45 +224,11 @@ public class AddWorkoutPage extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             saveCurrentExercise();
-            try {
-                int workoutId = userRepository.getLastWorkoutId(username);
-                saveCurrentMuscleGroup(workoutId);
-                dynamicPanel.removeAll();
-                dynamicPanel.add(new JLabel("Muscle(s) Worked:"));
-                dynamicPanel.add(muscleComboBox);
-                dynamicPanel.revalidate();
-                dynamicPanel.repaint();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(AddWorkoutPage.this, "Error retrieving last workout ID.", "Database Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-    private void saveCurrentMuscleGroup(int workoutId) {
-        if (currentMuscleGroup != null) {
-            int muscleId = userRepository.saveMuscleWorked(currentMuscleGroup, currentExerciseSets, getTopSetWeight(), workoutId);
-            saveExercises(muscleId);
-        }
-        currentMuscleGroup = (String) muscleComboBox.getSelectedItem();
-    }
-
-    private int getTopSetWeight() {
-        int topWeight = 0;
-        try {
-            ResultSet rs = userRepository.getTopSetWeightByMuscleGroup(currentMuscleGroup);
-            if (rs.next()) {
-                topWeight = rs.getInt("weight");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error retrieving top set weight.", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-        return topWeight;
-    }
-
-    private void saveExercises(int muscleId) {
-        if (currentExercise != null) {
-            userRepository.saveExerciseDone(muscleId, currentExercise);
+            dynamicPanel.removeAll();
+            dynamicPanel.add(new JLabel("Muscle(s) Worked:"));
+            dynamicPanel.add(muscleComboBox);
+            dynamicPanel.revalidate();
+            dynamicPanel.repaint();
         }
     }
 
@@ -259,33 +236,8 @@ public class AddWorkoutPage extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             saveCurrentExercise();
-            String date = dateField.getText();
-            boolean isSaved = userRepository.saveWorkoutDate(username, date);
-            if (isSaved) {
-                int workoutId = 0;
-                try {
-                    workoutId = userRepository.getLastWorkoutId(username);
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(AddWorkoutPage.this, "Error retrieving last workout ID.", "Database Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                saveCurrentMuscleGroup(workoutId);
-                JOptionPane.showMessageDialog(AddWorkoutPage.this, "Workout data saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
-                dispose(); // Close the panel
-                new WorkoutProgressPage(username); // Open the WorkoutProgressPage
-            } else {
-                JOptionPane.showMessageDialog(AddWorkoutPage.this, "Failed to save workout data.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-
-    private void saveWorkoutData() {
-        String date = dateField.getText();
-        if (userRepository.saveWorkoutDate(username, date)) {
-            JOptionPane.showMessageDialog(this, "Workout data saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(this, "Failed to save workout data.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(AddWorkoutPage.this, "Workout data saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+            dispose(); // Close the panel
         }
     }
 }
