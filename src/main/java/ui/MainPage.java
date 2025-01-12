@@ -113,7 +113,7 @@ public class MainPage extends JFrame {
     }
 
     private void openAddWorkoutPage() {
-        new AddWorkoutPage(username);
+        new AddWorkoutPage(username,this);
     }
 
     private void openWorkoutSuggestionsPage() {
@@ -134,5 +134,14 @@ public class MainPage extends JFrame {
         int progress = (int) ((consumedCalories / dailyCalorieGoal) * 100);
         calorieProgressBar.setValue(progress);
         calorieProgressBar.setString(consumedCalories + " / " + (int) dailyCalorieGoal + " kcal");
+    }
+    public void refreshMuscleGroupTable() {
+        JTable muscleGroupTable = createMuscleGroupTable();
+        JScrollPane scrollPane = new JScrollPane(muscleGroupTable);
+        JPanel centerPanel = (JPanel) getContentPane().getComponent(1); // Assuming centerPanel is the second component
+        centerPanel.remove(1); // Remove the old table
+        centerPanel.add(scrollPane, BorderLayout.CENTER); // Add the new table
+        centerPanel.revalidate();
+        centerPanel.repaint();
     }
 }

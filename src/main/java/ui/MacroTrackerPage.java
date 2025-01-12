@@ -1,3 +1,4 @@
+// src/main/java/ui/MacroTrackerPage.java
 package ui;
 
 import database.UserRepository;
@@ -8,10 +9,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class MacroTrackerPage extends JFrame {
-    private  MainPage mainPage;
+    private MainPage mainPage;
     private JProgressBar calorieProgressBar;
     private JLabel calorieIntakeLabel;
-    private JTextField mealNameField; // Change back to JTextField
+    private JTextField mealNameField;
     private JTextField mealCaloriesField;
     private JTextField mealProteinsField;
     private JTextField mealFatsField;
@@ -29,7 +30,7 @@ public class MacroTrackerPage extends JFrame {
     private UserRepository userRepository;
     private String username;
 
-    public MacroTrackerPage(String username, UserRepository userRepository,MainPage mainPage) {
+    public MacroTrackerPage(String username, UserRepository userRepository, MainPage mainPage) {
         this.username = username;
         this.userRepository = userRepository;
         this.mainPage = mainPage;
@@ -48,8 +49,9 @@ public class MacroTrackerPage extends JFrame {
         calorieProgressBar = new JProgressBar();
         calorieProgressBar.setStringPainted(true);
         calorieIntakeLabel = new JLabel();
-        mealNameField = new JTextField(10); // Initialize as JTextField
+        mealNameField = new JTextField(10);
         mealCaloriesField = new JTextField(10);
+        mealCaloriesField.setEditable(false);
         mealProteinsField = new JTextField(10);
         mealFatsField = new JTextField(10);
         mealCarbohydratesField = new JTextField(10);
@@ -236,6 +238,11 @@ public class MacroTrackerPage extends JFrame {
         // Add action listener to reset button
         resetButton.addActionListener(e -> resetMacros());
 
+        // Add document listeners to macro fields to update calories
+        mealProteinsField.getDocument().addDocumentListener(new MacroFieldListener());
+        mealFatsField.getDocument().addDocumentListener(new MacroFieldListener());
+        mealCarbohydratesField.getDocument().addDocumentListener(new MacroFieldListener());
+
         updateMealLog();
         updateConsumedMacros();
         updateConsumedCalories();
@@ -324,5 +331,34 @@ public class MacroTrackerPage extends JFrame {
         mainPage.updateCalorieProgressBar();
         updateConsumedMacros();
         updateMealLog();
+    }
+
+    private void updateCalories() {
+        try {
+            int proteins = Integer.parseInt(mealProteinsField.getText());
+            int fats = Integer.parseInt(mealFatsField.getText());
+            int carbohydrates = Integer.parseInt(mealCarbohydratesField.getText());
+            int calories = (proteins * 4) + (fats * 9) + (carbohydrates * 4);
+            mealCaloriesField.setText(String.valueOf(calories));
+        } catch (NumberFormatException e) {
+            mealCaloriesField.setText("");
+        }
+    }
+
+    private class MacroFieldListener implements javax.swing.event.DocumentListener {
+        @Override
+        public void insertUpdate(javax.swing.event.DocumentEvent e) {
+            updateCalories();
+        }
+
+        @Override
+        public void removeUpdate(javax.swing.event.DocumentEvent e) {
+            updateCalories();
+        }
+
+        @Override
+        public void changedUpdate(javax.swing.event.DocumentEvent e) {
+            updateCalories();
+        }
     }
 }

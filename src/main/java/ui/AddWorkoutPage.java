@@ -35,8 +35,9 @@ public class AddWorkoutPage extends JFrame {
     private int currentExerciseSets;
     private String username;
     private Map<String, Integer> muscleGroupSets;
-
-    public AddWorkoutPage(String username) {
+    private MainPage mainPage;
+    public AddWorkoutPage(String username, MainPage mainPage) {
+        this.mainPage = mainPage;
         this.username = username;
         try {
             userRepository = new UserRepository();
@@ -63,7 +64,6 @@ public class AddWorkoutPage extends JFrame {
         muscleExercises.put("Glutes", new String[]{"Romanian Deadlifts", "Hip Thrusts", "Glute Kickbacks"});
         muscleExercises.put("Calves", new String[]{"Toe Press", "Standing Calf Raise", "Sitting Calf Raise"});
 
-        // Initialize muscle group sets map
         muscleGroupSets = new HashMap<>();
         for (String muscleGroup : muscleExercises.keySet()) {
             muscleGroupSets.put(muscleGroup, 0);
@@ -93,7 +93,6 @@ public class AddWorkoutPage extends JFrame {
         finishWorkoutButton = new JButton("Finish Workout");
         finishWorkoutButton.addActionListener(new FinishWorkoutListener());
 
-        // Layout setup
         setLayout(new BorderLayout());
         JPanel topPanel = new JPanel(new GridLayout(2, 2, 10, 10));
         topPanel.add(dateLabel);
@@ -229,6 +228,7 @@ public class AddWorkoutPage extends JFrame {
             dynamicPanel.add(muscleComboBox);
             dynamicPanel.revalidate();
             dynamicPanel.repaint();
+            mainPage.refreshMuscleGroupTable();
         }
     }
 
@@ -237,7 +237,8 @@ public class AddWorkoutPage extends JFrame {
         public void actionPerformed(ActionEvent e) {
             saveCurrentExercise();
             JOptionPane.showMessageDialog(AddWorkoutPage.this, "Workout data saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
-            dispose(); // Close the panel
+            mainPage.refreshMuscleGroupTable();
+            dispose();
         }
     }
 }
