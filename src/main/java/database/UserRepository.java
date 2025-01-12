@@ -14,127 +14,7 @@ public class UserRepository {
 
     }
 
-    private void executeUpdateWithRetry(String sql, String... params) throws SQLException {
-        int retries = 0;
-        while (true) {
-            try (Connection connection = DriverManager.getConnection(URL);
-                 PreparedStatement pstmt = connection.prepareStatement(sql)) {
-                for (int i = 0; i < params.length; i++) {
-                    pstmt.setString(i + 1, params[i]);
-                }
-                pstmt.executeUpdate();
-                return;
-            } catch (SQLException e) {
-                if (e.getErrorCode() == 5 && retries < MAX_RETRIES) { // SQLITE_BUSY error code is 5
-                    retries++;
-                    try {
-                        Thread.sleep(RETRY_DELAY_MS);
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        throw new SQLException("Interrupted during retry", ie);
-                    }
-                } else {
-                    throw e;
-                }
-            }
-        }
-    }
 
-    private ResultSet executeQueryWithRetry(String sql, String... params) throws SQLException {
-        int retries = 0;
-        while (true) {
-            try (Connection connection = DriverManager.getConnection(URL);
-                 PreparedStatement pstmt = connection.prepareStatement(sql)) {
-                for (int i = 0; i < params.length; i++) {
-                    pstmt.setString(i + 1, params[i]);
-                }
-                return pstmt.executeQuery();
-            } catch (SQLException e) {
-                if (e.getErrorCode() == 5 && retries < MAX_RETRIES) {
-                    retries++;
-                    try {
-                        Thread.sleep(RETRY_DELAY_MS);
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        throw new SQLException("Interrupted during retry", ie);
-                    }
-                } else {
-                    throw e;
-                }
-            }
-        }
-    }
-
-
-
-    public void saveSet(String username, String exerciseName, int weight, int reps) throws SQLException {
-        String sql = "INSERT INTO Sets (username, exercise_name, weight, reps) VALUES (?, ?, ?, ?)";
-        executeUpdateWithRetry(sql, username, exerciseName, String.valueOf(weight), String.valueOf(reps));
-    }
-
-    public void updateBestSet(String exerciseName, int weight, int reps) throws SQLException {
-        String sql = "SELECT weight, reps FROM BestSets WHERE exercise_name = ?";
-        try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement pstmt = connection.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
-            if (rs.next()) {
-                int bestWeight = rs.getInt("weight");
-                int bestReps = rs.getInt("reps");
-                if (weight > bestWeight || (weight == bestWeight && reps > bestReps)) {
-                    String updateSql = "UPDATE BestSets SET weight = ?, reps = ? WHERE exercise_name = ?";
-                    executeUpdateWithRetry(updateSql, String.valueOf(weight), String.valueOf(reps), exerciseName);
-                }
-            } else {
-                String insertSql = "INSERT INTO BestSets (exercise_name, weight, reps) VALUES (?, ?, ?)";
-                executeUpdateWithRetry(insertSql, exerciseName, String.valueOf(weight), String.valueOf(reps));
-            }
-        }
-    }
-
-    public void saveExercise(String muscleGroup, String exerciseName, int sets) throws SQLException {
-        String sql = "INSERT INTO Exercises (muscle_group, exercise_name, sets) VALUES (?, ?, ?)";
-        executeUpdateWithRetry(sql, muscleGroup, exerciseName, String.valueOf(sets));
-    }
-
-    public int saveMuscleWorked(String muscleName, int sets, int topSetWeight, int workoutId) {
-        String sql = "INSERT INTO MusclesWorked (muscle_name, sets, top_set_weight, workout_id) VALUES (?, ?, ?, ?)";
-        try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement pstmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            pstmt.setString(1, muscleName);
-            pstmt.setInt(2, sets);
-            pstmt.setInt(3, topSetWeight);
-            pstmt.setInt(4, workoutId);
-            pstmt.executeUpdate();
-
-            try (ResultSet rs = pstmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return -1;
-    }
-
-    public boolean saveWorkoutDate(String username, String date) {
-        String sql = "INSERT INTO Workouts (username, date) VALUES (?, ?)";
-        try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement pstmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            pstmt.setString(1, username);
-            pstmt.setString(2, date);
-            pstmt.executeUpdate();
-
-            try (ResultSet rs = pstmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    return true;
-                }
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return false;
-    }
     public boolean validateUser(String username, String password) {
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
         try (Connection connection = DriverManager.getConnection(URL);
@@ -179,18 +59,6 @@ public class UserRepository {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             return false;
-        }
-    }
-
-    public ResultSet getUserDetails(String username) {
-        String sql = "SELECT weight, age, height, gender FROM users WHERE username = ?";
-        try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, username);
-            return pstmt.executeQuery();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            return null;
         }
     }
 
@@ -376,62 +244,6 @@ public class UserRepository {
         }
     }
 
-    public ResultSet getTopSetWeightByMuscleGroup(String muscleGroup) throws SQLException {
-        String sql = "SELECT MAX(weight) AS weight FROM Sets WHERE exercise_name IN (SELECT exercise_name FROM Exercises WHERE muscle_group = ?)";
-        try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, muscleGroup);
-            return pstmt.executeQuery();
-        }
-    }
-
-
-
-    public boolean saveExerciseDone(int muscleId, String exerciseName) {
-        String sql = "INSERT INTO ExercisesDone (muscle_id, exercise_name) VALUES (?, ?)";
-        try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, muscleId);
-            pstmt.setString(2, exerciseName);
-            pstmt.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return false;
-    }
-
-    public int getLastWorkoutId(String username) throws SQLException {
-        String sql = "SELECT id FROM Workouts WHERE username = ? ORDER BY date DESC LIMIT 1";
-        try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, username);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    int workoutId = rs.getInt("id");
-                    System.out.println("Last workout ID found: " + workoutId); // Debug statement
-                    return workoutId;
-                } else {
-                    System.out.println("No workout ID found for username: " + username); // Debug statement
-                    return -1;
-                }
-            }
-        }
-    }
-
-
-
-    public ResultSet getExercisesByMuscleGroup(String muscleGroup) throws SQLException {
-        String sql = "SELECT exercise_name, sets FROM Exercises WHERE muscle_group = ?";
-        try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, muscleGroup);
-            return pstmt.executeQuery();
-        }
-    }
-
-
-
     public boolean userExists(String username) {
         String sql = "SELECT 1 FROM users WHERE username = ?";
         try (Connection connection = DriverManager.getConnection(URL);
@@ -486,20 +298,6 @@ public class UserRepository {
         }
     }
 
-    public int getMuscleGroupSets(String username, String muscleGroup) throws SQLException {
-        String sql = "SELECT sets FROM MuscleGroupSets WHERE username = ? AND muscle_group = ? AND week_start_date = date('now', 'weekday 0', '-7 days')";
-        try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, username);
-            pstmt.setString(2, muscleGroup);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("sets");
-                }
-            }
-        }
-        return 0;
-    }
     public Map<String, Integer> getAllMuscleGroupSets(String username) throws SQLException {
         String sql = "SELECT muscle_group, sets FROM MuscleGroupSets WHERE username = ? AND week_start_date = date('now', 'weekday 0', '-7 days')";
         Map<String, Integer> muscleGroupSets = new HashMap<>();
