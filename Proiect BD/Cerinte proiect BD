@@ -1,0 +1,29 @@
+1. [1p] Descrierea pe scurt a activitatii pentru care se realizeaza proiectul
+--
+Proiectul implică crearea unei aplicații de urmărire a fitness-ului care permite utilizatorilor
+să își înregistreze antrenamentele, să își urmărească progresul și să își gestioneze nutriția.
+Aplicația include funcții precum autentificarea utilizatorilor, înregistrarea exercițiilor și seturilor,
+calcularea aportului zilnic de calorii și urmărirea caloriilor consumate, proteinelor, grăsimilor
+și carbohidraților. Aplicația folosește o bază de date SQLite pentru a stoca datele utilizatorilor,
+detaliile antrenamentelor și informațiile nutriționale.
+--
+2. [2p] Identificarea dependentelor functionale si aducerea schemei bazei de date cel
+putin in forma normala BCNF utilizand normalizarea (unde este cazul)
+
+3. [1p] Crearea diagramei entitate - relatie (ERD)/diagramei de tabele corespunzatoare
+datelor aferente actiunii modelate (poate fi realizata intr-un editor specializat sau in
+unul de text/imagini)
+Documentatie:
+https://www.lucidchart.com/pages/er-diagrams
+
+4. [1p] Definirea tabelelor (minum 4-5): exemplificare de comenzi de creare, modificare
+a structurii, stergere, redenumire, trunchiere, dupa caz
+5. [1p] Confirmarea existentei tabelelor create prin interogarea vederilor din dictionarul
+datelor; vizualizarea structurii acestora si a constrangerilor aferente
+6. [1p] Definirea de obiecte ale bazei de date, altele decat tabele: vederi, secvente,
+sinonime, indecsi; creare, modificare/stergere, dupa caz a obiectelor; confirmarea
+existentei/inexistentei obiectelor in dictionarul datelor
+7. [1p] Exemplificare de comenzi de prelucrare asupra datelor: adaugare, modificare,
+stergere, imbinare (merge), selectie
+8. [2p] Selectia datelor - minim 5 interogari complexe ce pot fi incluse si in definitia unor
+viewuri, care contin conditii/clauze complexe.
