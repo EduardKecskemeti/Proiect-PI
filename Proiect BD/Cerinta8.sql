@@ -1,4 +1,5 @@
--- 1. Vedere pentru obtinerea utilizatorilor si a totalului caloriilor consumate pentru ziua curentă
+-- 1. Vedere pentru obtinerea utilizatorilor si a totalului
+--    caloriilor consumate pentru ziua curentă
 CREATE VIEW UserDailyCalories AS
 SELECT u.username, SUM(c.calories) AS total_calories
 FROM users u
@@ -8,7 +9,8 @@ WHERE c.date = date('now')
 
 -- 2. Vedere pentru obtinerea utilizatorilor si a totalului macronutrientilor consumati pentru ziua curentă
 CREATE VIEW UserDailyMacros AS
-SELECT u.username, SUM(m.proteins) AS total_proteins, SUM(m.fats) AS total_fats, SUM(m.carbohydrates) AS total_carbohydrates
+SELECT u.username, SUM(m.proteins) AS total_proteins, SUM(m.fats) AS total_fats, SUM(m.carbohydrates)
+    AS total_carbohydrates
 FROM users u
          JOIN meals m ON u.username = m.username
 WHERE m.date = date('now')
@@ -21,7 +23,8 @@ FROM users u
          JOIN MaxWeights mw ON u.username = mw.username
 GROUP BY u.username, mw.exercise_name;
 
--- 4. Vedere pentru obtinerea utilizatorilor si a totalului seturilor pentru fiecare grupa de muschi pentru saptamana curenta
+-- 4. Vedere pentru obtinerea utilizatorilor si a totalului seturilor pentru fiecare
+-- grupa de muschi pentru saptamana curenta
 CREATE VIEW UserWeeklyMuscleGroupSets AS
 SELECT u.username, mgs.muscle_group, SUM(mgs.sets) AS total_sets
 FROM users u
@@ -29,7 +32,7 @@ FROM users u
 WHERE mgs.week_start_date = date('now', 'weekday 0', '-7 days')
         GROUP BY u.username, mgs.muscle_group;
 
--- 5. Vedere pentru obtinerea utilizatorilor si a totalului caloriilor consumate pentru ziua curentă
+-- 5. Vedere pentru obtinerea utilizatorilor si a aportului zilnic de calorii
 CREATE VIEW UserCalorieBalance AS
 SELECT u.username, u.weight, u.age, u.height, u.gender, u.activity_level,
        (CASE

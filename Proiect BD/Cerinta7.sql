@@ -1,6 +1,7 @@
 --adaugare date
 INSERT INTO users (username, password, weight, age, height, gender, activity_level)
-VALUES ('12345', '1', 70, 30, 175, 'Male', 'Moderately active');
+VALUES ('12345', '1', 70, 30, 175, 'Male',
+        'Moderately active');
 --Modificare date
 UPDATE users
 SET weight = 75, height = 180
@@ -21,3 +22,5 @@ MERGE INTO users AS target
 SELECT username, weight, age, height, gender, activity_level
 FROM users
 WHERE username = '12345';
+
+
