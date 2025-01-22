@@ -134,6 +134,7 @@ public class MainPage extends JFrame {
         int progress = (int) ((consumedCalories / dailyCalorieGoal) * 100);
         calorieProgressBar.setValue(progress);
         calorieProgressBar.setString(consumedCalories + " / " + (int) dailyCalorieGoal + " kcal");
+
     }
     public void refreshMuscleGroupTable() {
         JTable muscleGroupTable = createMuscleGroupTable();
@@ -144,4 +145,5 @@ public class MainPage extends JFrame {
         centerPanel.revalidate();
         centerPanel.repaint();
     }
+
 }

@@ -2,17 +2,23 @@
 package ui;
 
 import database.UserRepository;
+import java.awt.EventQueue;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.List;
+import javax.swing.JFrame;
 
+import javax.swing.JComboBox;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 
 public class MacroTrackerPage extends JFrame {
     private MainPage mainPage;
     private JProgressBar calorieProgressBar;
     private JLabel calorieIntakeLabel;
-    private JTextField mealNameField;
     private JTextField mealCaloriesField;
     private JTextField mealProteinsField;
     private JTextField mealFatsField;
@@ -29,6 +35,9 @@ public class MacroTrackerPage extends JFrame {
     private JLabel carbohydrateLabel;
     private UserRepository userRepository;
     private String username;
+    private JComboBox<String> presetFoodComboBox;
+    private JButton logPresetFoodButton;
+    private JButton addCustomFoodButton;
 
     public MacroTrackerPage(String username, UserRepository userRepository, MainPage mainPage) {
         this.username = username;
@@ -49,7 +58,6 @@ public class MacroTrackerPage extends JFrame {
         calorieProgressBar = new JProgressBar();
         calorieProgressBar.setStringPainted(true);
         calorieIntakeLabel = new JLabel();
-        mealNameField = new JTextField(10);
         mealCaloriesField = new JTextField(10);
         mealCaloriesField.setEditable(false);
         mealProteinsField = new JTextField(10);
@@ -60,7 +68,18 @@ public class MacroTrackerPage extends JFrame {
         resetButton = new JButton("Reset");
         mealLogArea = new JTextArea(10, 30);
         mealLogArea.setEditable(false);
-
+        presetFoodComboBox = new JComboBox<>();
+        addCustomFoodButton = new JButton("Add Custom Food");
+        addCustomFoodButton.addActionListener(e -> new AddCustomFoodPage(userRepository,this));
+        logPresetFoodButton = new JButton("Log Preset Food");
+        try {
+            List<Map<String, Object>> presetFoods = userRepository.getPresetFoods();
+            for (Map<String, Object> food : presetFoods) {
+                presetFoodComboBox.addItem((String) food.get("food_name"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         // Initialize progress bars for macronutrients
         proteinProgressBar = new JProgressBar(SwingConstants.VERTICAL);
         proteinProgressBar.setStringPainted(true);
@@ -113,14 +132,14 @@ public class MacroTrackerPage extends JFrame {
         gbc.gridwidth = 2;
         mainPanel.add(calorieProgressBar, gbc);
 
-        // Add meal name label and field
+        // Add preset food combo box
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 1;
-        mainPanel.add(new JLabel("Meal Name:"), gbc);
+        mainPanel.add(new JLabel("Preset Foods:"), gbc);
         gbc.gridx = 1;
         gbc.gridy = 2;
-        mainPanel.add(mealNameField, gbc);
+        mainPanel.add(presetFoodComboBox, gbc);
 
         // Add meal calories label and field
         gbc.gridx = 0;
@@ -226,6 +245,11 @@ public class MacroTrackerPage extends JFrame {
         gbc.gridheight = 1;
         mainPanel.add(carbohydrateLabel, gbc);
 
+        gbc.gridx = 0;
+        gbc.gridy = 10;
+        gbc.gridwidth = 2;
+        mainPanel.add(addCustomFoodButton, gbc);
+
         // Add main panel to frame
         add(mainPanel);
         pack();
@@ -237,7 +261,15 @@ public class MacroTrackerPage extends JFrame {
 
         // Add action listener to reset button
         resetButton.addActionListener(e -> resetMacros());
-
+        // Add action listener to preset food combo box
+        presetFoodComboBox.addActionListener(e -> fillMacroFields());
+        // Add key listener to meal amount field
+        mealAmountField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                updateMacroFields();
+            }
+        });
         // Add document listeners to macro fields to update calories
         mealProteinsField.getDocument().addDocumentListener(new MacroFieldListener());
         mealFatsField.getDocument().addDocumentListener(new MacroFieldListener());
@@ -248,8 +280,53 @@ public class MacroTrackerPage extends JFrame {
         updateConsumedCalories();
     }
 
+
+    private void fillMacroFields() {
+        String selectedFood = (String) presetFoodComboBox.getSelectedItem();
+        if (selectedFood != null) {
+            try {
+                Map<String, Object> foodData = userRepository.getPresetFoodData(selectedFood);
+                int calories = (int) foodData.get("calories");
+                int proteins = (int) foodData.get("proteins");
+                int fats = (int) foodData.get("fats");
+                int carbohydrates = (int) foodData.get("carbohydrates");
+
+                mealCaloriesField.setText(String.valueOf(calories));
+                mealProteinsField.setText(String.valueOf(proteins));
+                mealFatsField.setText(String.valueOf(fats));
+                mealCarbohydratesField.setText(String.valueOf(carbohydrates));
+                mealAmountField.setText("100");
+
+                updateMacroFields();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void updateMacroFields() {
+        try {
+            int amount = Integer.parseInt(mealAmountField.getText());
+            String selectedFood = (String) presetFoodComboBox.getSelectedItem();
+            if (selectedFood != null) {
+                Map<String, Object> foodData = userRepository.getPresetFoodData(selectedFood);
+                int calories = (int) foodData.get("calories");
+                int proteins = (int) foodData.get("proteins");
+                int fats = (int) foodData.get("fats");
+                int carbohydrates = (int) foodData.get("carbohydrates");
+
+                mealCaloriesField.setText(String.valueOf(calories * amount / 100));
+                mealProteinsField.setText(String.valueOf(proteins * amount / 100));
+                mealFatsField.setText(String.valueOf(fats * amount / 100));
+                mealCarbohydratesField.setText(String.valueOf(carbohydrates * amount / 100));
+            }
+        } catch (NumberFormatException | SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void logMeal() {
-        String mealName = mealNameField.getText();
+        String mealName = (String) presetFoodComboBox.getSelectedItem();
         int calories = Integer.parseInt(mealCaloriesField.getText());
         int proteins = Integer.parseInt(mealProteinsField.getText());
         int fats = Integer.parseInt(mealFatsField.getText());
@@ -257,20 +334,12 @@ public class MacroTrackerPage extends JFrame {
         int amount = Integer.parseInt(mealAmountField.getText());
 
         if (userRepository.logMeal(username, mealName, calories, proteins, fats, carbohydrates, amount)) {
-            userRepository.logConsumedCalories(username, calories);
-            updateConsumedCalories();
             updateConsumedMacros();
+            updateConsumedCalories();
             updateMealLog();
-            mainPage.updateCalorieProgressBar();
-            mealNameField.setText("");
-            mealCaloriesField.setText("");
-            mealProteinsField.setText("");
-            mealFatsField.setText("");
-            mealCarbohydratesField.setText("");
-            mealAmountField.setText("");
-        } else {
-            JOptionPane.showMessageDialog(this, "Error logging meal.", "Error", JOptionPane.ERROR_MESSAGE);
         }
+        mainPage.updateCalorieProgressBar();
+
     }
 
     private void updateConsumedCalories() {
@@ -306,21 +375,20 @@ public class MacroTrackerPage extends JFrame {
         int totalFats = 0;
         int totalCarbohydrates = 0;
         try {
-            while (rs != null && rs.next()) {
+            while (rs.next()) {
                 String mealName = rs.getString("meal_name");
                 int calories = rs.getInt("calories");
                 int proteins = rs.getInt("proteins");
                 int fats = rs.getInt("fats");
                 int carbohydrates = rs.getInt("carbohydrates");
-                int amount = rs.getInt("amount");
-                mealLogArea.append(mealName + ": " + calories + " kcal, " + proteins + "g proteins, " + fats + "g fats, " + carbohydrates + "g carbs, " + amount + "g\n");
+                mealLogArea.append(mealName + ": " + calories + " kcal, " + proteins + "g proteins, " + fats + "g fats, " + carbohydrates + "g carbohydrates\n");
                 totalCalories += calories;
                 totalProteins += proteins;
                 totalFats += fats;
                 totalCarbohydrates += carbohydrates;
             }
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
         updateConsumedMacros();
     }
@@ -359,6 +427,17 @@ public class MacroTrackerPage extends JFrame {
         @Override
         public void changedUpdate(javax.swing.event.DocumentEvent e) {
             updateCalories();
+        }
+    }
+    public void refreshFoodComboBox() {
+        presetFoodComboBox.removeAllItems();
+        try {
+            List<Map<String, Object>> presetFoods = userRepository.getPresetFoods();
+            for (Map<String, Object> food : presetFoods) {
+                presetFoodComboBox.addItem((String) food.get("food_name"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }
