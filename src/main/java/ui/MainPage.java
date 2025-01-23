@@ -2,9 +2,12 @@
 package ui;
 
 import database.UserRepository;
+import datastructures.Trie;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +22,12 @@ public class MainPage extends JFrame {
     private UserRepository userRepository;
     private String username;
     private JProgressBar calorieProgressBar;
-
+    private JComboBox<String> presetFoodComboBox;
+    private Trie foodTrie;
     public MainPage(String username, UserRepository userRepository) {
         this.username = username;
         this.userRepository = userRepository;
-
+        this.foodTrie = new Trie();
         setTitle("Main Page");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(800, 600));
@@ -73,7 +77,36 @@ public class MainPage extends JFrame {
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
+        presetFoodComboBox = new JComboBox<>();
+        populateFoodTrie();
+        presetFoodComboBox.setEditable(true);
+        JTextField textField = (JTextField) presetFoodComboBox.getEditor().getEditorComponent();
+        textField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                String input = textField.getText();
+                List<String> suggestions = foodTrie.search(input);
+                presetFoodComboBox.removeAllItems();
+                for (String suggestion : suggestions) {
+                    presetFoodComboBox.addItem(suggestion);
+                }
+                textField.setText(input);
+                presetFoodComboBox.showPopup();
+            }
+        });
     }
+    private void populateFoodTrie() {
+        try {
+            List<Map<String, Object>> presetFoods = userRepository.getPresetFoods();
+            for (Map<String, Object> food : presetFoods) {
+                String foodName = (String) food.get("food_name");
+                foodTrie.insert(foodName);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private JTable createMuscleGroupTable() {
         String[] columnNames = {"Muscle Group", "Sets"};

@@ -1,6 +1,5 @@
 
-        package datastructures;
-
+package datastructures;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,12 +23,12 @@ public class Trie {
     }
 
     public void insert(String word) {
-        String lowerCaseWord = word.toLowerCase(); // Convert to lowercase
-        originalWordsMap.put(lowerCaseWord, word); // Store the original format
+        String lowerCaseWord = word.toLowerCase();
+        originalWordsMap.put(lowerCaseWord, word);
         TrieNode node = root;
         for (char c : lowerCaseWord.toCharArray()) {
             if (c < 'a' || c > 'z') {
-                continue; // Skip invalid characters
+                continue;
             }
             int index = c - 'a';
             if (node.children[index] == null) {
@@ -38,11 +37,11 @@ public class Trie {
             node = node.children[index];
         }
         node.isEndOfWord = true;
-        node.originalWord = word; // Store the original format in the node
+        node.originalWord = word;
     }
 
     public List<String> search(String query) {
-        query = query.toLowerCase(); // Convert to lowercase
+        query = query.toLowerCase();
         List<String> results = new ArrayList<>();
         searchHelper(root, new StringBuilder(), query, results);
         return results;
@@ -50,7 +49,7 @@ public class Trie {
 
     private void searchHelper(TrieNode node, StringBuilder currentWord, String query, List<String> results) {
         if (node.isEndOfWord && currentWord.toString().contains(query)) {
-            results.add(node.originalWord); // Add the original format to the results
+            results.add(node.originalWord);
         }
         for (char c = 'a'; c <= 'z'; c++) {
             int index = c - 'a';
