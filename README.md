@@ -24,15 +24,15 @@ Analiză Săptămânală: Creează o funcționalitate de sumar săptămânal, ca
 Tipuri de Realizări: Creează un sistem prin care utilizatorul isi poate vedea greutatile maximale pentru fiecare exercitiu de baza
 
 ## Obiective
-Aplicația urmărește să rezolve problema ..
+Aplicația doreste sa ajute utilizatorul sa isi urmareasca progresul la sala si sa ofere un mod de a urmari caloriile si macronutrientii consumati zilnic, oferind sugestii fie pentru crestere,mentinere sau scadere in greutate
 
-* ob1
-* ob2
-* ob3
-    - sob31
-    - sob32
-    - ...
-* ....
+* urmarirea numarului de seturi executat pentru fiecare grupa musculara
+* oferirea unei interfete unde utilizatorul sa isi poata salva antrenamentele
+* implementarea  unui tracker de macronutrienti 
+    - calcularea automata a caloriilor si a macronutrientilor
+    - implementarea unei baze de date de unde utilizatorul sa poata alege dintr-o lista prestabilita de alimente sau sa adauge alimente noi
+    - implementarea unui mecansim de search pentru ca utilizatorul sa poata gasi mai usor alimentele dorite
+* implementarea unui sistem de realizari unde utilizatorul sa isi poata vedea progresul pentru toate exercitiile de baza
 
 ## Arhitectura
 
