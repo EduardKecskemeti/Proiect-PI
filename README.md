@@ -35,11 +35,10 @@ Aplicația urmărește să rezolve problema ..
 * ....
 
 ## Arhitectura
-Lorem ipsum ...
 
-![Alt text](documentatie-ghid-utlizare-raport/diagrama-clase.png)
 
-Lorem ipsum ...
+![image](https://github.com/user-attachments/assets/d3b2a06d-ab48-434a-8b05-680e793787e8)
+
 
 ## Functionalitati/Exemple utilizare
 Ecranul de Login/Înregistrare
