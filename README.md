@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/QlRjSf1d)
+
 # Workout app
 ### Kecskemeti Eduard-Alexandru
 
@@ -83,8 +82,5 @@ Secțiunea de Realizări: Utilizatorul poate vedea o listă de milestones și ac
 Notificări la Finalizarea Achievements: Când un achievement este atins , utilizatorul primește o notificare și o insignă vizibilă pe profil.
 
 
-### Resurse
-Markdown Guide, [Online] Available: https://www.markdownguide.org/basic-syntax/ [accesed: Mar 14, 1706]
 =======
 # Proiect-PI
->>>>>>> 6a5f9cfd528b123715f73d07f237c9dda57a3bde
